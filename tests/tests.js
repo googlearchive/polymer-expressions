@@ -141,6 +141,33 @@ suite('PolymerExpressions', function() {
     assertLacksClass(target, 'foo');
   });
 
+  test('ClassName Singular allows string key', function() {
+    var div = createTestHtml(
+        '<template bind><div class="{{ \'my-foo\': bar }}">' +
+        '</div></template>');
+    var model = {bar: 1};
+    recursivelySetTemplateModel(div, model);
+    Platform.performMicrotaskCheckpoint();
+
+    var target = div.childNodes[1];
+    assertHasClass(target, 'my-foo');
+
+    model.bar = 0;
+    Platform.performMicrotaskCheckpoint();
+    assertLacksClass(target, 'my-foo');
+  });
+
+  test('ClassName - error on non-identifier, non-string key', function() {
+    var div = createTestHtml('<template bind>' +
+                             '  <div class="{{ 1 + 2 : bar }}">' +
+                             '</div></template>');
+    var model = {bar: 1};
+    recursivelySetTemplateModel(div, model);
+    Platform.performMicrotaskCheckpoint();
+
+    assert.equal(errors[0][0], 'Invalid expression syntax: 1 + 2 : bar');
+  });
+
   test('ClassName Multiple', function() {
     var div = createTestHtml(
         '<template bind>' +
@@ -162,6 +189,30 @@ suite('PolymerExpressions', function() {
     assert.strictEqual('baz boo', target.className);
     assertLacksClass(target, 'foo');
     assertHasClass(target, 'baz');
+    assertHasClass(target, 'boo');
+  });
+
+  test('ClassName Multiple allows string keys', function() {
+    var div = createTestHtml(
+        '<template bind>' +
+        '<div class="{{ \'x-foo\': bar; \'y-baz\': bat > 1; \'boo\': bot.bam }}">' +
+        '</div></template>');
+    var model = {bar: 1, bat: 1, bot: { bam: 1 }};
+    recursivelySetTemplateModel(div, model);
+    Platform.performMicrotaskCheckpoint();
+
+    var target = div.childNodes[1];
+    assert.strictEqual('x-foo boo', target.className);
+    assertHasClass(target, 'x-foo');
+    assertLacksClass(target, 'y-baz');
+    assertHasClass(target, 'boo');
+
+    model.bar = 0;
+    model.bat = 2;
+    Platform.performMicrotaskCheckpoint();
+    assert.strictEqual('y-baz boo', target.className);
+    assertLacksClass(target, 'x-foo');
+    assertHasClass(target, 'y-baz');
     assertHasClass(target, 'boo');
   });
 

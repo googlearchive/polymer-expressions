@@ -183,7 +183,7 @@
   };
 
   function getFn(arg) {
-    return arg instanceof IdentPath ? arg.valueFn() : arg;
+    return typeof arg === 'function' ? arg : arg.valueFn();
   }
 
   function ASTDelegate() {
@@ -213,9 +213,12 @@
     },
 
     createLabeledStatement: function(label, expression) {
+      if (label.type !== 'Identifier' && label.type !== 'StringLiteral')
+        throw Error("Only Identifiers or Strings can be keys in Labeled Statements.");
+
       this.labeledStatements.push({
-        label: label,
-        expression: expression instanceof IdentPath ? expression.valueFn() : expression
+        label: label.name,
+        expression: getFn(expression)
       });
       return expression;
     },
@@ -272,6 +275,15 @@
 
     createLiteral: function(token) {
       return function() { return token.value; };
+    },
+
+    createStringLiteral: function(token) {
+      var valueFn = this.createLiteral(token);
+      return {
+        valueFn: function() { return valueFn; },
+        type: 'StringLiteral',
+        name: token.value
+      };
     },
 
     createArrayExpression: function(elements) {
