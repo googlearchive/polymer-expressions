@@ -74,6 +74,7 @@
         ExpressionStatement: 'ExpressionStatement',
         Identifier: 'Identifier',
         Literal: 'Literal',
+        StringLiteral: 'StringLiteral',
         LabeledStatement: 'LabeledStatement',
         LogicalExpression: 'LogicalExpression',
         MemberExpression: 'MemberExpression',
@@ -536,6 +537,7 @@
     function expect(value) {
         var token = lex();
         if (token.type !== Token.Punctuator || token.value !== value) {
+      console.log('hello', value);
             throwUnexpected(token);
         }
     }
@@ -674,7 +676,9 @@
 
         if (type === Token.Identifier) {
             expr = delegate.createIdentifier(lex().value);
-        } else if (type === Token.StringLiteral || type === Token.NumericLiteral) {
+        } else if (type === Token.StringLiteral) {
+            expr = delegate.createStringLiteral(lex());
+        } else if (type === Token.NumericLiteral) {
             expr = delegate.createLiteral(lex());
         } else if (type === Token.Keyword) {
             if (matchKeyword('this')) {
@@ -986,7 +990,7 @@
                 parseInExpression(expr);
             } else if (match('|')) {
                 parseFilters(expr);
-            } else if (expr.type === Syntax.Identifier && match(':')) {
+            } else if (match(':')) {
                 parseLabelledExpressions(expr);
             } else {
                 delegate.createTopLevel(expr);
@@ -1005,9 +1009,10 @@
 
     // LabelExpression ::
     //   Identifier ":" Expression
+    //   StringLiteral ":" Expression
 
     function parseLabelledExpressions(expr) {
-        var label = expr.name;
+        var label = expr;
         expect(':');
 
         expr = parseExpression();
@@ -1015,8 +1020,9 @@
 
         consumeSemicolon();
 
-        while (lookahead.type === Token.Identifier) {
-            label = lex().value;
+        while (lookahead.type === Token.Identifier ||
+               lookahead.type === Token.StringLiteral) {
+            label = parseExpression();
             expect(':');
             expr = parseExpression();
             delegate.createLabeledStatement(label, expr);
