@@ -5,7 +5,7 @@
     "The Polymer Authors"
   ],
   "dependencies": {
-    "TemplateBinding": "Polymer/TemplateBinding#master"
+    "TemplateBinding": "Polymer/TemplateBinding#>=0.3.0  <1.0.0"
   },
   "license": "BSD",
   "private": true,
