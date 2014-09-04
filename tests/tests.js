@@ -133,6 +133,14 @@ suite('PolymerExpressions', function() {
         copy.sort();
         return copy;
       };
+      delegate.fetch = {
+        filter: function(obj, key) {
+          return obj[key];
+        },
+        extraDeps: function(obj, key) {
+          return [[obj, key]];
+        }
+      };
 
       template.bindingDelegate = delegate;
       template.model = model;
@@ -1508,6 +1516,32 @@ suite('PolymerExpressions', function() {
       assert.equal(errors[0][0],
                    'Invalid expression syntax: bar | upperCase + 42');
 
+      done();
+    });
+  });
+
+  test('filters with extraDeps', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '{{ fetch(foo, "bar") }}' +
+        '</template>');
+
+    var model = {
+      foo: {
+        bar: 123
+      }
+    };
+
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.equal('123', div.childNodes[1].textContent);
+      model.foo.bar = 27;
+    }).then(function() {
+      assert.equal('27', div.childNodes[1].textContent);
+      model.foo.bar = 300;
+    }).then(function() {
+      assert.equal('300', div.childNodes[1].textContent);
       done();
     });
   });
