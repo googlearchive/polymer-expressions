@@ -33,7 +33,7 @@ suite('PolymerExpressions', function() {
     // https://github.com/Polymer/polymer-expressions/issues/44
     if (/Trident/.test(navigator.userAgent) &&
         typeof MutationObserver == 'function') {
-      
+
       ieDummyObserver = new MutationObserver(function() {});
       ieDummyObserver.observe(testDiv, { childList: true, subtree: true });
     }
@@ -48,13 +48,10 @@ suite('PolymerExpressions', function() {
     if (ieDummyObserver) ieDummyObserver.disconnect();
     document.body.removeChild(testDiv);
     clearAllTemplates(testDiv);
-    Platform.performMicrotaskCheckpoint();
-    assert.strictEqual(0, Observer._allObserversCount);
   });
 
   function then(fn) {
     setTimeout(function() {
-      Platform.performMicrotaskCheckpoint();
       fn();
     }, 0);
 
@@ -69,7 +66,6 @@ suite('PolymerExpressions', function() {
     var event = document.createEvent('Event');
     event.initEvent(type, true, false);
     target.dispatchEvent(event);
-    Platform.performMicrotaskCheckpoint();
   }
 
   function hasClass(node, className) {
@@ -86,20 +82,34 @@ suite('PolymerExpressions', function() {
     return assert.isFalse(hasClass(node, className))
   }
 
+  function isTemplate(el) {
+    if (el.isTemplate_ === undefined)
+      el.isTemplate_ = el.tagName == 'TEMPLATE';
+
+    return el.isTemplate_;
+  }
+
+  var forEach = Array.prototype.forEach.call.bind(Array.prototype.forEach);
+
+  function forAllTemplatesFrom(node, fn) {
+    var subTemplates = node.querySelectorAll('template');
+
+
+    if (isTemplate(node))
+      fn(node)
+    forEach(subTemplates, fn);
+  }
+
   function createTestHtml(s) {
     var div = document.createElement('div');
     div.innerHTML = s;
     testDiv.appendChild(div);
 
-    HTMLTemplateElement.forAllTemplatesFrom_(div, function(template) {
-      HTMLTemplateElement.decorate(template);
-    });
-
     return div;
   }
 
   function recursivelySetTemplateModel(node, model, delegate) {
-    HTMLTemplateElement.forAllTemplatesFrom_(node, function(template) {
+    forAllTemplatesFrom(node, function(template) {
       delegate = delegate|| new PolymerExpressions;
 
       // testing filters
@@ -402,32 +412,6 @@ suite('PolymerExpressions', function() {
     then(function() {
       assert.strictEqual('id:Tim', div.childNodes[2].textContent);
       assert.strictEqual('id:Sally', div.childNodes[3].textContent);
-
-      done();
-    });
-  });
-
-  test('Named Scope Repeat - semantic template', function(done) {
-    var div = createTestHtml(
-        '<template bind>' +
-          '<table><tr template repeat="{{ user in users }}">' +
-            '<td>{{ id }}:{{ user.name }}</td>' +
-          '</tr></table>' +
-        '</template>');
-    var model = {
-      id: 'id',
-      users: [
-        { name: 'Tim' },
-        { name: 'Sally'}
-      ]
-    };
-    recursivelySetTemplateModel(div, model);
-
-    then(function() {
-      var tbody = div.firstChild.nextSibling.firstChild;
-      assert.strictEqual('id:Tim', tbody.childNodes[1].firstChild.textContent);
-      assert.strictEqual('id:Sally',
-                         tbody.childNodes[2].firstChild.textContent);
 
       done();
     });
@@ -1612,7 +1596,6 @@ suite('PolymerExpressions', function() {
       model.index = 1;
 
     }).then(function() {
-      Platform.performMicrotaskCheckpoint();
       assert.equal('B', div.childNodes[1].textContent);
 
       done();
