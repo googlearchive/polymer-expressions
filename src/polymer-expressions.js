@@ -9,10 +9,11 @@
   'use strict';
 
   var esprima;
-  if(typeof require === 'function')
-    esprima = require('../third_party/esprima/esprima').esprima
-  else
+  if (typeof require === 'function') {
+    esprima = require('../third_party/esprima/esprima').esprima;
+  } else {
     esprima = global.esprima;
+  }
 
   function prepareBinding(expressionText, name, node, filterRegistry) {
     var expression;
