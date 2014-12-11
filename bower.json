@@ -5,7 +5,7 @@
     "The Polymer Authors"
   ],
   "dependencies": {
-    "TemplateBinding": "Polymer/TemplateBinding#master"
+    "TemplateBinding": "Polymer/TemplateBinding#^0.5.0"
   },
   "license": "BSD",
   "private": true,
@@ -15,5 +15,6 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "version": "0.5.2"
 }
