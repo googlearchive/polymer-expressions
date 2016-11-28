@@ -2,7 +2,7 @@
   "name": "polymer-expressions",
   "version": "0.0.0",
   "description": "README.md",
-  "main": "grunt.js",
+  "main": "./src/polymer-expressions.js",
   "directories": {
     "test": "tests"
   },
