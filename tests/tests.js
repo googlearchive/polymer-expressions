@@ -383,6 +383,132 @@ suite('PolymerExpressions', function() {
     });
   });
 
+  test('orderBy - no predicate', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '<template repeat="{{ users | orderBy }}">' +
+            '{{ name }}' +
+          '</template>' +
+        '</template>');
+    var model = {
+      users: [
+        { name: 'Tim' },
+        { name: 'Sally' }
+      ]
+    };
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.strictEqual('Tim', div.childNodes[2].textContent);
+      assert.strictEqual('Sally', div.childNodes[3].textContent);
+
+      done();
+    });
+  });
+
+  test('orderBy - one sort term', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '<template repeat="{{ users | orderBy( \'name\' ) }}">' +
+            '{{ name }}' +
+          '</template>' +
+        '</template>');
+    var model = {
+      users: [
+        { name: 'Tim' },
+        { name: 'Randy' },
+        { name: 'Sally' }
+      ]
+    };
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.strictEqual('Randy', div.childNodes[2].textContent);
+      assert.strictEqual('Sally', div.childNodes[3].textContent);
+      assert.strictEqual('Tim', div.childNodes[4].textContent);
+
+      done();
+    });
+  });
+
+  test('orderBy - multiple sort terms', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '<template repeat="{{ users | orderBy(' +
+              '[ \'lastName\', \'firstName\' ] ) }}">' +
+            '{{ firstName }}' +
+          '</template>' +
+        '</template>');
+    var model = {
+      users: [
+        { firstName: 'Tim', lastName: 'Thompson' },
+        { firstName: 'Randy', lastName: 'Reagan' },
+        { firstName: 'Sally', lastName: 'Smith' },
+        { firstName: 'Alice', lastName: 'Smith' }
+      ]
+    };
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.strictEqual('Randy', div.childNodes[2].textContent);
+      assert.strictEqual('Alice', div.childNodes[3].textContent);
+      assert.strictEqual('Sally', div.childNodes[4].textContent);
+      assert.strictEqual('Tim', div.childNodes[5].textContent);
+
+      done();
+    });
+  });
+
+  test('orderBy - reverse one term', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '<template repeat="{{ users | orderBy( \'-name\' ) }}">' +
+            '{{ name }}' +
+          '</template>' +
+        '</template>');
+    var model = {
+      users: [
+        { name: 'Tim' },
+        { name: 'Randy' },
+        { name: 'Sally' }
+      ]
+    };
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.strictEqual('Tim', div.childNodes[2].textContent);
+      assert.strictEqual('Sally', div.childNodes[3].textContent);
+      assert.strictEqual('Randy', div.childNodes[4].textContent);
+
+      done();
+    });
+  });
+
+  test('orderBy - reverse entire result', function(done) {
+    var div = createTestHtml(
+        '<template bind>' +
+          '<template repeat="{{ users | orderBy( \'name\', true ) }}">' +
+            '{{ name }}' +
+          '</template>' +
+        '</template>');
+    var model = {
+      users: [
+        { name: 'Tim' },
+        { name: 'Randy' },
+        { name: 'Sally' }
+      ]
+    };
+    recursivelySetTemplateModel(div, model);
+
+    then(function() {
+      assert.strictEqual('Tim', div.childNodes[2].textContent);
+      assert.strictEqual('Sally', div.childNodes[3].textContent);
+      assert.strictEqual('Randy', div.childNodes[4].textContent);
+
+      done();
+    });
+  });
+
   test('Named Scope Repeat', function(done) {
     var div = createTestHtml(
         '<template bind>' +
