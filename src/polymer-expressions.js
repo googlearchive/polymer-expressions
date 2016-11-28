@@ -212,6 +212,11 @@
         fn = fn.toDOM;
       }
 
+      var extraDepsFn = fn.extraDeps;
+      if (fn.filter) {
+        fn = fn.filter;
+      }
+
       if (typeof fn != 'function') {
         console.error('Cannot find function or filter: ' + this.name);
         return;
@@ -220,6 +225,17 @@
       var args = initialArgs || [];
       for (var i = 0; i < this.args.length; i++) {
         args.push(getFn(this.args[i])(model, observer, filterRegistry));
+      }
+
+      if (observer && extraDepsFn) {
+        var deps = extraDepsFn.apply(context, args);
+        for (var i = 0; i < deps.length; i++) {
+          if (Array.isArray(deps[i])) {
+            observer.addPath(deps[i][0], deps[i][1]);
+          } else {
+            observer.addObserver(deps[i]);
+          }
+        }
       }
 
       return fn.apply(context, args);
