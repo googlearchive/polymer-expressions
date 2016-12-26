@@ -59,6 +59,7 @@ suite('tokenizer', function () {
   });
 
   test('should tokenize a String with escaping', function () {
+    // "a\c\\d\'\"" -> ac\d'"
     expectTokens('"a\\c\\\\d\\\'\\""', [t(STRING, 'ac\\d\'"')]);
   });
 
